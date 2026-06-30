@@ -1,0 +1,6 @@
+**/assets/originals/
+**/source/
+*.pptx
+*.ppt
+.DS_Store
+_preview*.html
