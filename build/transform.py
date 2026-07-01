@@ -350,8 +350,25 @@ PRESENTER = r"""
     else if (currentStation<0) exit();
   };
   var _next=window.goNext, _prev=window.goPrev;
-  window.goNext=function(){ if (active() && nextStep()) return; exit(); _next(); };
-  window.goPrev=function(){ if (active() && prevStep()) return; exit(); _prev(); };
+  // Clean linear walk over stations only — bypasses the base engine's TQM section flow
+  // (clinical scenario, variability, Zarbo/Chitale pre-analytics, IHC, QP2, frameworks).
+  window.goNext=function(){
+    if (active() && nextStep()) return;
+    exit();
+    if (typeof closingActive!=='undefined' && closingActive) return;
+    var cs=(typeof currentStation!=='undefined')?currentStation:-1, last=STATIONS.length-2;
+    if (cs<0){ navigateTo(0); return; }
+    if (cs<last){ navigateTo(cs+1); return; }
+    if (typeof showClosing==='function') showClosing();
+  };
+  window.goPrev=function(){
+    if (active() && prevStep()) return;
+    exit();
+    if (typeof closingActive!=='undefined' && closingActive){ if(typeof hideClosing==='function') hideClosing(); navigateTo(STATIONS.length-2); return; }
+    var cs=(typeof currentStation!=='undefined')?currentStation:-1;
+    if (cs<=0){ navigateTo(-1); return; }
+    navigateTo(cs-1);
+  };
 
   var nb=document.getElementById('next-btn'), pb=document.getElementById('prev-btn');
   if (nb) nb.onclick=function(e){ if(e&&e.stopPropagation)e.stopPropagation(); window.goNext(); };
